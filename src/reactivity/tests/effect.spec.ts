@@ -69,6 +69,9 @@ describe('effect 测试', () => {
   });
 
   it('stop', () => {
+    /**
+     * 停止effect更新
+     */
     let dummy;
     const obj = reactive({ age: 1 });
     const runner = effect(() => {
@@ -80,7 +83,8 @@ describe('effect 测试', () => {
 
     stop(runner); // 更新数据，不会执行回调
     
-    obj.age = 3;
+    // obj.age = 3;
+    obj.age++;
     expect(dummy).toBe(2);
 
     runner(); // 执行runner会执行回调

@@ -1,13 +1,14 @@
 import { extend } from "../shared";
 
 let activeEffect: this; // 存储ReactiveEffect的实例对象
+let shouldTrack; // 是否需要收集依赖
 const targetMap = new Map(); // 存储代理对象
 
 class ReactiveEffect {
   private _fn: any; // 收集回调
   public scheduler: any // 收集scheduler
   public deps = []; // 收集依赖
-  public activeStop = true; // 是否可以删除
+  public activeStop = true; // 是否可以删除依赖回调
   public onStop?: () => void;
 
   constructor(fn, scheduler?) {
@@ -17,8 +18,19 @@ class ReactiveEffect {
 
   // 执行回调
   run () {
+    // 如果是删除了依赖回调就直接回调，不收集依赖
+    if(!this.activeStop) {
+      return this._fn();
+    }
+    shouldTrack = true; // 需要收集依赖
     activeEffect = this // 获取实例对象
-    return this._fn();
+
+    const result = this._fn(); // 执行回调
+
+    // reset
+    shouldTrack = false; // 不需要收集依赖
+
+    return result;
   };
 
   // 删除依赖
@@ -36,11 +48,16 @@ class ReactiveEffect {
 // 删除实例对象
 function clearEffect (effect) {
   effect.deps.forEach((dep) => {
-    dep.delete(effect);
+    dep.delete(effect); // 因为dep是一个set集合是一个引用值，所以指向的都是同一个内存地址，所以删除dep相当于删除targetMap的dep
   });
+  effect.deps.length = 0;
 }
+
 // 进行依赖收集
 export function track(target, key) {
+
+  if (!isTracking()) return;
+
   // target -> key -> dep
   let depsMap = targetMap.get(target); // 获取map中的代理对象的键值
 
@@ -55,18 +72,23 @@ export function track(target, key) {
     depsMap.set(key, dep);
   }
 
+  // todo 增加多个一样的reactiveEffect的实例对象
+  if (dep.has(activeEffect)) return;
+
+  dep.add(activeEffect); // 存储ReactiveEffect的实例对象
+  activeEffect.deps.push(dep); // 收集dep，是存储的内存地址
+};
+
+function isTracking() {
   /**
    * 因为actvieEffect是在 ReactiveEffect的实例对象run执行时才赋值，
    * 所以在不执行effect，直接是读取代理对象的值收集依赖时是没有activeEffect的
   */
-  if(!activeEffect) return;
-
-  // todo 增加多个一样的reactiveEffect的实例对象
-  // 用set解决
-  dep.add(activeEffect); // 存储ReactiveEffect的实例对象
-  
-  activeEffect.deps.push(dep); // 收集dep
-};
+  /** 
+   * shouldTrack在调用stop方法后未false，用于判断是否需要在进行依赖收集
+  */
+  return shouldTrack && activeEffect !== undefined;
+}
 
 // 触发依赖
 export function trigger(target, key, value) {

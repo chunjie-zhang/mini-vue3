@@ -1,13 +1,20 @@
 {
-  "name": "mini-vue",
-  "version": "1.0.0",
+  "name": "mini-vue3",
+  "version": "1.0.0-beta.1",
+  "author": "zhangchunjie",
   "description": "vue3.0源码阅读练习",
+  "keywords": ["vue3.0", "ts", "jest"],
   "main": "index.js",
   "scripts": {
     "test": "jest"
   },
-  "author": "张春节",
   "license": "MIT",
+  "homepage": "https://github.com/chunjie-zhang/mini-vue3",
+  "bugs": "https://github.com/chunjie-zhang/mini-vue3/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chunjie-zhang/mini-vue3.git"
+  },
   "dependencies": {
     "@types/jest": "^29.0.2",
     "jest": "^29.0.2"
