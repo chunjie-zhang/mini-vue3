@@ -1,5 +1,6 @@
+import { isObject } from '../shared';
 import { track, trigger } from './effect';
-import { ReactiveFlags } from './reactive';
+import { reactive, ReactiveFlags, readonly } from './reactive';
 
 // 一开始加载的时候获取，不再重复的执行函数，减少开销
 const get = createGetter();
@@ -16,12 +17,19 @@ function createGetter(isReadonly = false) {
         return isReadonly;
       };
 
+      const res = Reflect.get(target, key);
+
+      // 如果res是一个引用值也需要转为代理对象
+      if (isObject(res)) {
+        return isReadonly ? readonly(res) : reactive(res);
+      };
+
       // 如果是readonly不收集依赖
       if(!isReadonly) {
         // todo: 依赖收集
         track(target, key);
-      }
-      const res = Reflect.get(target, key)
+      };
+
       return res;
   };
 };
