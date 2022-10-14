@@ -21,7 +21,7 @@ describe('readonly', () => {
     const original = { name: 'zcj', age: 1,};
     const wrapped = readonly(original);
 
-    wrapped.age = 10
+    wrapped.age = 10;
 
     expect(console.warn).toBeCalled();
 

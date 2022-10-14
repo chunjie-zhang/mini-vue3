@@ -1,4 +1,4 @@
-import { isObject } from '../shared';
+import { extend, isObject } from '../shared';
 import { track, trigger } from './effect';
 import { reactive, ReactiveFlags, readonly } from './reactive';
 
@@ -6,36 +6,40 @@ import { reactive, ReactiveFlags, readonly } from './reactive';
 const get = createGetter();
 const set = createSetter();
 const readonlyGet = createGetter(true);
+const shallowReadonlyGet = createGetter(true, true);
 
 // get函数代码复用
-function createGetter(isReadonly = false) {
+function createGetter(isReadonly = false, shallow = false) {
   return function get(target, key) {
-      // 判断是否是reactive对象
-      if(key === ReactiveFlags.IS_REACTIVE) {
-        return !isReadonly;
-      } else if(key === ReactiveFlags.IS_READONLY) { // 是否是readonly对象
-        return isReadonly;
-      };
+    // 判断是否是reactive对象
+    if (key === ReactiveFlags.IS_REACTIVE) {
+      return !isReadonly;
+    } else if(key === ReactiveFlags.IS_READONLY) { // 是否是readonly对象
+      return isReadonly;
+    };
 
-      const res = Reflect.get(target, key);
+    const res = Reflect.get(target, key);
 
-      // 如果res是一个引用值也需要转为代理对象
-      if (isObject(res)) {
-        return isReadonly ? readonly(res) : reactive(res);
-      };
-
-      // 如果是readonly不收集依赖
-      if(!isReadonly) {
-        // todo: 依赖收集
-        track(target, key);
-      };
-
+    if(shallow) {
       return res;
+    }
+
+    // 如果res是一个引用值也需要转为代理对象
+    if (isObject(res)) {
+      return isReadonly ? readonly(res) : reactive(res);
+    };
+
+    // 如果是readonly不收集依赖
+    if(!isReadonly) {
+      // todo: 依赖收集
+      track(target, key);
+    };
+
+    return res;
   };
 };
 
-// set 代码复用
-
+// set代码复用
 function createSetter() {
   return function set(target, key, value) {
     const res = Reflect.set(target, key, value);
@@ -57,3 +61,8 @@ export const readonlyHandlers = { // 返回代理对象
     return true;
   },
 };
+
+// shallowReadonlyHandler处理函数
+export const shallowReadonlyHandler = extend({}, readonlyHandlers, {
+  get: shallowReadonlyGet,
+});

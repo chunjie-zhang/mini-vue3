@@ -1,4 +1,4 @@
-import { mutableHandlers, readonlyHandlers } from "./baseHandlers";
+import { mutableHandlers, readonlyHandlers, shallowReadonlyHandler } from "./baseHandlers";
 
 function createActiveObject (obj, baseHandlers) {
   return new Proxy(obj, baseHandlers);
@@ -14,14 +14,19 @@ export function reactive(obj:object) {
   return createActiveObject(obj, mutableHandlers);
 };
 
+// readonly
+export function readonly(obj:object) {
+  return createActiveObject(obj, readonlyHandlers);
+};
+
+// shallowReadonly
+export function shallowReadonly(obj: object) {
+  return createActiveObject(obj, shallowReadonlyHandler);
+};
+
 // 是否是reactive对象
 export function isReactive(value) {
   return !!value[ReactiveFlags.IS_REACTIVE] // 有可能是真实的对象，会返回undefined，所以转了一下
-};
-
-// 只读
-export function readonly(obj:object) {
-  return createActiveObject(obj, readonlyHandlers);
 };
 
 // 是否是readonly对象
