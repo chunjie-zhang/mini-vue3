@@ -1,4 +1,4 @@
-import { readonly, isReadonly } from "../reactive";
+import { readonly, isReadonly, isProxy } from "../reactive";
 
 describe('readonly', () => {
   it('readonly test', () => {
@@ -12,6 +12,8 @@ describe('readonly', () => {
     expect(isReadonly(original)).toBe(false);
     expect(isReadonly(wrapped.obj)).toBe(true);
     expect(isReadonly(original.obj)).toBe(false);
+    expect(isProxy(wrapped.obj)).toBe(true);
+    expect(isProxy(original.obj)).toBe(false);
   });
 
   it('warn set', () => {

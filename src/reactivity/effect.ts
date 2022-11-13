@@ -67,11 +67,17 @@ export function track(target, key) {
   }
 
   let dep = depsMap.get(key);
+  
   if (!dep) { // 如果没有fn集合,就创建一个空集合，初始化
     dep = new Set();
     depsMap.set(key, dep);
   }
 
+  trackEffect(dep);
+};
+
+// 将公共方法抽离,复用于ref、reactive
+export function trackEffect(dep) {
   // todo 增加多个一样的reactiveEffect的实例对象
   if (dep.has(activeEffect)) return;
 
@@ -79,6 +85,7 @@ export function track(target, key) {
   activeEffect.deps.push(dep); // 收集dep，是存储的内存地址
 };
 
+// 判断是否需要收集依赖
 function isTracking() {
   /**
    * 因为actvieEffect是在 ReactiveEffect的实例对象run执行时才赋值，
@@ -93,15 +100,20 @@ function isTracking() {
 // 触发依赖
 export function trigger(target, key, value) {
   let depsMap = targetMap.get(target);
-  let deps = depsMap.get(key);
-  for ( const effect of deps) {
+  let dep = depsMap.get(key);
+  triggerEffects(dep);
+};
+
+// 将触发依赖公共方法抽离,复用于ref、reactive
+export function triggerEffects(dep) {
+  for ( const effect of dep) {
     if (effect.scheduler) {
       effect.scheduler(); // 触发scheduler，更新数据
     } else {
       effect.run(); // 触发回调，更新数据
     }
   }
-};
+}
 
 // 停止更新fn
 export function stop(runner) {

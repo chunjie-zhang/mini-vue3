@@ -33,3 +33,8 @@ export function isReactive(value) {
 export function isReadonly(value) {
   return !!value[ReactiveFlags.IS_READONLY] // 有可能是真实的对象，会返回undefined，所以转了一下
 };
+
+// 是否是由reactive或者readOnly创建的代理对象
+export function isProxy(value) {
+  return isReactive(value) || isReadonly(value);
+};
