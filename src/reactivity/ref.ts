@@ -60,3 +60,19 @@ export function unRef(ref) {
   // 如果是ref对象则返回ref的值，否则返回ref
   return isRef(ref) ? ref.value : ref;
 }
+
+// proxyRefs方法-->通常用于template中
+export function proxyRefs(objectWithRefs) {
+  return new Proxy(objectWithRefs, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key));
+    },
+    set(target, key, value) {
+      if(isRef(target[key]) && !isRef(value)) {
+        return (target[key].value = value);
+      } else {
+        Reflect.set(target, key, value);
+      }
+    }
+  });
+}
