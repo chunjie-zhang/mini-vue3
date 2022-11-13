@@ -86,13 +86,13 @@ export function trackEffect(dep) {
 };
 
 // 判断是否需要收集依赖
-function isTracking() {
+export function isTracking() {
   /**
    * 因为actvieEffect是在 ReactiveEffect的实例对象run执行时才赋值，
-   * 所以在不执行effect，直接是读取代理对象的值收集依赖时是没有activeEffect的
+   * 所以在不执行effect时，直接是读取代理对象的值收集依赖时是没有activeEffect的
   */
   /** 
-   * shouldTrack在调用stop方法后未false，用于判断是否需要在进行依赖收集
+   * shouldTrack在调用stop方法后为false，用于判断是否需要在进行依赖收集
   */
   return shouldTrack && activeEffect !== undefined;
 }
