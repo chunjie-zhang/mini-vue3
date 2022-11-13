@@ -106,6 +106,7 @@ export function trigger(target, key, value) {
 
 // 将触发依赖公共方法抽离,复用于ref、reactive
 export function triggerEffects(dep) {
+  // 如果dep是空的数组或者是undefined都不会执行for of
   for ( const effect of dep) {
     if (effect.scheduler) {
       effect.scheduler(); // 触发scheduler，更新数据
