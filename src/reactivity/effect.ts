@@ -4,7 +4,8 @@ let activeEffect: this; // 存储ReactiveEffect的实例对象
 let shouldTrack; // 是否需要收集依赖
 const targetMap = new Map(); // 存储代理对象
 
-class ReactiveEffect {
+// 用于computed收集响应式依赖
+export class ReactiveEffect {
   private _fn: any; // 收集回调
   public scheduler: any // 收集scheduler
   public deps = []; // 收集依赖
